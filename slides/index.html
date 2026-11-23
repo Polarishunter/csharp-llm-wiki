@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>從零開始認識 C# Windows Forms</title>
+<style>
+  :root{
+    --bg:#f6f4ef; --paper:#ffffff; --ink:#1d2433; --muted:#5b6475;
+    --accent:#5b3cc4; --accent-soft:#ece7fb; --line:#e3e0d8;
+    --code-bg:#1e1f2b; --code-ink:#e6e6ef;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
+  .deck{position:relative;height:100%;overflow:hidden}
+  .slide{position:absolute;inset:0;display:none;padding:5vh 7vw 9vh;flex-direction:column;justify-content:center}
+  .slide.active{display:flex;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  h1{font-size:clamp(2rem,4.6vw,3.6rem);margin:.2em 0;line-height:1.2}
+  h2{font-size:clamp(1.5rem,3vw,2.4rem);margin:0 0 .6em;border-left:8px solid var(--accent);padding-left:.5em}
+  p,li,td,th{font-size:clamp(1rem,1.7vw,1.4rem);line-height:1.65}
+  ul{margin:.2em 0;padding-left:1.3em} li{margin:.25em 0}
+  .kicker{color:var(--accent);font-weight:700;letter-spacing:.08em}
+  .sub{color:var(--muted)}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:3vw;align-items:start}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:1em 1.3em}
+  .tip{background:var(--accent-soft);border-radius:12px;padding:.7em 1em;margin-top:1em}
+  table{border-collapse:collapse;width:100%;background:var(--paper);border-radius:12px;overflow:hidden}
+  th,td{border-bottom:1px solid var(--line);padding:.45em .8em;text-align:left}
+  th{background:var(--accent-soft)}
+  code{font-family:"Cascadia Code",Consolas,"Courier New",monospace;background:var(--accent-soft);padding:0 .25em;border-radius:4px}
+  pre{background:var(--code-bg);color:var(--code-ink);border-radius:12px;padding:1em 1.2em;overflow:auto;margin:.4em 0;
+    font-size:clamp(.85rem,1.45vw,1.2rem);line-height:1.55}
+  pre code{background:none;padding:0;font-family:"Cascadia Code",Consolas,"Courier New",monospace}
+  .kw{color:#c792ea}.ty{color:#82aaff}.st{color:#c3e88d}.cm{color:#7f8aa3;font-style:italic}.nu{color:#f78c6c}
+  .steps{counter-reset:s;list-style:none;padding:0}
+  .steps li{counter-increment:s;position:relative;padding-left:2.2em}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:.15em;width:1.6em;height:1.6em;border-radius:50%;
+    background:var(--accent);color:#fff;font-size:.8em;display:grid;place-items:center;font-weight:700}
+  .flow{display:flex;flex-wrap:wrap;gap:.4em;align-items:center}
+  .flow span{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:.25em .8em;font-size:clamp(.85rem,1.4vw,1.15rem)}
+  .flow b{color:var(--accent)}
+  .meta{position:absolute;left:7vw;bottom:3.2vh;font-size:.85rem;color:var(--muted)}
+  .meta a{color:var(--accent)}
+  .bar{position:fixed;left:0;top:0;height:5px;background:var(--accent);transition:width .25s}
+  .nav{position:fixed;right:2vw;bottom:2.2vh;display:flex;gap:.5em;align-items:center;z-index:5}
+  .nav button{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:10px;
+    width:2.6em;height:2.6em;font-size:1rem;cursor:pointer}
+  .nav button:hover{border-color:var(--accent);color:var(--accent)}
+  .nav .count{font-variant-numeric:tabular-nums;color:var(--muted);min-width:4.5em;text-align:center}
+  .title-slide{background:linear-gradient(135deg,#efe9ff 0%,#f6f4ef 60%)}
+  @media (max-width:760px){.cols{grid-template-columns:1fr}.slide{padding:4vh 6vw 12vh;justify-content:flex-start;overflow:auto}}
+  @media print{.slide{display:flex!important;position:relative;page-break-after:always;height:100vh}.nav,.bar{display:none}}
+</style>
+</head>
+<body>
+<div class="bar" id="bar"></div>
+<main class="deck" id="deck">
+
+<!-- 1 -->
+<section class="slide title-slide" data-wiki="index">
+  <p class="kicker">C# 初學者教學</p>
+  <h1>從零開始認識<br>C# Windows Forms</h1>
+  <p class="sub">給沒有程式基礎的你：從 Hello World 到第一個會動的視窗程式</p>
+  <p class="sub">按 <code>→</code> / 空白鍵 下一頁，<code>←</code> 上一頁；手機可左右滑動</p>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-wiki="index">
+  <h2>今天的學習地圖</h2>
+  <div class="cols">
+    <div class="card">
+      <p class="kicker">第一部分：C# 語言</p>
+      <ul><li>C# 是什麼</li><li>Hello, World</li><li>變數與型別</li><li>if / switch 判斷</li></ul>
+    </div>
+    <div class="card">
+      <p class="kicker">第二部分：Windows Forms</p>
+      <ul><li>表單與控制項</li><li>建立第一個專案</li><li>事件與按鈕程式</li><li>表單事件順序</li></ul>
+    </div>
+  </div>
+  <p class="tip">目標：上完後你能自己做出「輸入名字、按按鈕、加入清單」的視窗程式。</p>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-wiki="csharp-basics">
+  <h2>C# 是什麼？</h2>
+  <ul>
+    <li>C# 是 <b>.NET 平台上最主要的語言</b>；.NET 是免費、跨平台、開放原始碼的開發環境。</li>
+    <li>用途很廣：桌面、手機、伺服器、雲端，甚至 IoT 裝置。</li>
+    <li><b>編譯式</b>語言：程式先編譯，再執行。</li>
+    <li><b>強型別</b>語言：每個變數在編譯時就有確定的型別。</li>
+  </ul>
+  <div class="flow"><span>寫程式碼 .cs</span><b>→</b><span>編譯 dotnet build</span><b>→</b><span>執行 dotnet run</span></div>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-wiki="csharp-basics">
+  <h2>第一個程式：Hello, World</h2>
+  <div class="cols">
+    <div>
+      <p>最短寫法（一行就能跑）：</p>
+<pre data-example="ConsoleDemo/Program.cs"><code>// This line prints "Hello, World"
+Console.WriteLine("Hello, World");</code></pre>
+      <ul>
+        <li><code>Console</code>：主控台（文字視窗）</li>
+        <li><code>WriteLine</code>：輸出一行文字</li>
+      </ul>
+    </div>
+    <div>
+      <p>傳統寫法（很多範例長這樣）：</p>
+<pre data-example="HelloClassic/Program.cs"><code>using System;
+namespace TourOfCsharp;
+
+class Program
+{
+    static void Main()
+    {
+        // This line prints "Hello, World"
+        Console.WriteLine("Hello, World");
+    }
+}</code></pre>
+    </div>
+  </div>
+  <p class="tip">兩種寫法編譯結果相同；<code>Main</code> 是傳統寫法的程式進入點。</p>
+</section>
+
+<!-- 5 -->
+<section class="slide" data-wiki="csharp-basics">
+  <h2>寫 C# 的三個規則</h2>
+  <ol class="steps">
+    <li>每一句指令以 <b>分號 <code>;</code></b> 結尾。</li>
+    <li><b>大小寫有差別</b>：<code>Console</code> ≠ <code>console</code>。</li>
+    <li>用 <b>大括號 <code>{ }</code></b> 把程式碼包成區塊。</li>
+  </ol>
+  <p class="tip"><code>using System;</code> 讓我們可以直接寫 <code>Console</code>，不必寫 <code>System.Console</code>。命名空間就像資料夾，用來整理程式。</p>
+</section>
+
+<!-- 6 -->
+<section class="slide" data-wiki="variables">
+  <h2>變數與常用型別</h2>
+  <div class="cols">
+    <div>
+      <p><b>變數</b>＝有名字的盒子；<b>型別</b>＝盒子能裝什麼。</p>
+<pre data-example="ConsoleDemo/Program.cs"><code>// 明確寫出型別
+int count = 10;
+double temperature = 36.6;
+
+// 用 var 讓編譯器推斷型別
+var name = "C#";</code></pre>
+      <p class="sub"><code>var</code>：讓編譯器依值自動推斷型別。</p>
+    </div>
+    <table>
+      <tr><th>型別</th><th>用途</th></tr>
+      <tr><td><code>int</code></td><td>整數</td></tr>
+      <tr><td><code>double</code></td><td>有小數的數字</td></tr>
+      <tr><td><code>bool</code></td><td>真 / 假</td></tr>
+      <tr><td><code>char</code></td><td>單一字元</td></tr>
+      <tr><td><code>string</code></td><td>文字</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="slide" data-wiki="variables">
+  <h2>型別安全：錯誤在編譯時就被抓到</h2>
+<pre data-example="ConsoleDemo/Program.cs"><code>int a = 5;
+int b = a + 2; // OK
+
+bool test = true;
+
+// Error. Operator '+' cannot be applied to operands of type 'int' and 'bool'.
+// int c = a + test;</code></pre>
+  <ul>
+    <li>整數加布林值沒有意義，<b>編譯器直接報錯</b>，程式不會帶著錯誤去執行。</li>
+    <li>C# 的 <code>bool</code> 不能轉成 <code>int</code>。</li>
+    <li>變數宣告後不能改變型別。</li>
+  </ul>
+</section>
+
+<!-- 8 -->
+<section class="slide" data-wiki="conditions">
+  <h2>if / else：二選一</h2>
+<pre data-example="ConsoleDemo/Program.cs"><code>void DisplayWeatherReport(double tempInCelsius)
+{
+    if (tempInCelsius &lt; 20.0)
+    {
+        Console.WriteLine("Cold.");
+    }
+    else
+    {
+        Console.WriteLine("Perfect!");
+    }
+}</code></pre>
+  <p>括號裡是<b>布林運算式</b>：結果是 <code>true</code> 就做上面，<code>false</code> 就做 <code>else</code>。</p>
+</section>
+
+<!-- 9 -->
+<section class="slide" data-wiki="conditions">
+  <h2>else if：檢查多個條件</h2>
+  <div class="cols">
+<pre data-example="ConsoleDemo/Program.cs"><code>int score = 75;
+if (score &gt;= 90)
+{
+    Console.WriteLine("優秀");
+}
+else if (score &gt;= 60)
+{
+    Console.WriteLine("及格");
+}
+else
+{
+    Console.WriteLine("不及格");
+}</code></pre>
+    <div>
+      <ul>
+        <li>由上往下檢查，<b>第一個成立的</b>就執行，後面不再看。</li>
+        <li>75 不滿足 ≥ 90，但滿足 ≥ 60 → 輸出「及格」。</li>
+      </ul>
+      <p class="tip">想一想：<code>score = 90</code> 會輸出什麼？</p>
+    </div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide" data-wiki="conditions">
+  <h2>switch：依值選擇路徑</h2>
+  <div class="cols">
+<pre data-example="ConsoleDemo/Program.cs"><code>int day = 6;
+switch (day)
+{
+    case 6:
+    case 7:
+        Console.WriteLine("週末");
+        break;
+    default:
+        Console.WriteLine("平日");
+        break;
+}</code></pre>
+    <ul>
+      <li>由上而下比對，執行第一個符合的區段。</li>
+      <li>都不符合 → 執行 <code>default</code>。</li>
+      <li>一個區段可以有多個 <code>case</code>。</li>
+      <li>每段必須以 <code>break</code> 結束，否則<b>編譯錯誤</b>。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="slide" data-wiki="windows-forms">
+  <h2>Windows Forms 是什麼？</h2>
+  <ul>
+    <li>用來建立 <b>Windows 桌面應用程式</b>的 UI 架構。</li>
+    <li>提供控制項、繪圖、資料繫結與使用者輸入處理。</li>
+    <li>Visual Studio 有<b>拖放式設計工具</b>：把按鈕拖到視窗上就好，還有對齊輔助線。</li>
+  </ul>
+  <div class="flow"><span>拖放控制項</span><b>→</b><span>設定屬性</span><b>→</b><span>撰寫事件程式</span><b>→</b><span>執行</span></div>
+</section>
+
+<!-- 12 -->
+<section class="slide" data-wiki="windows-forms">
+  <h2>兩個核心名詞：表單與控制項</h2>
+  <div class="cols">
+    <div class="card"><p class="kicker">表單 Form</p><p>顯示資訊給使用者的<b>視窗</b>，例如 <code>Form1</code>。</p></div>
+    <div class="card"><p class="kicker">控制項 Control</p><p>放在表單上、顯示資料或接受輸入的<b>元件</b>：按鈕、文字方塊、下拉清單……</p></div>
+  </div>
+  <p class="tip">使用者點滑鼠、按鍵盤會引發<b>事件</b>，程式再用程式碼回應 —— 這就是視窗程式「動起來」的方式。</p>
+</section>
+
+<!-- 13 -->
+<section class="slide" data-wiki="first-app">
+  <h2>動手做：建立第一個專案</h2>
+  <ol class="steps">
+    <li>安裝 Visual Studio 2026，勾選「.NET 桌面開發」。</li>
+    <li>建立新專案 → 搜尋 <code>winforms</code> → 語言選 C#。</li>
+    <li>選 <b>Windows Forms App</b>（不要選 .NET Framework 版）。</li>
+    <li>專案名稱 <code>Names</code>，Framework 選 .NET 10.0（LTS）→ 建立。</li>
+    <li>畫面出現 <code>Form1</code> 設計工具；從「檢視」打開工具箱與屬性視窗。</li>
+  </ol>
+</section>
+
+<!-- 14 -->
+<section class="slide" data-wiki="first-app">
+  <h2>放控制項、設定屬性</h2>
+  <div class="cols">
+    <table>
+      <tr><th>控制項</th><th>屬性</th><th>值</th></tr>
+      <tr><td>Label</td><td>Text</td><td><code>Names</code></td></tr>
+      <tr><td>ListBox</td><td>Name</td><td><code>lstNames</code></td></tr>
+      <tr><td>TextBox</td><td>Name</td><td><code>txtName</code></td></tr>
+      <tr><td>Button</td><td>Name / Text</td><td><code>btnAdd</code> / <code>Add Name</code></td></tr>
+      <tr><td>Form</td><td>Text</td><td><code>Names</code></td></tr>
+    </table>
+    <div>
+      <p><b>Name</b>：程式碼裡叫它的名字。</p>
+      <p><b>Text</b>：畫面上顯示的文字。</p>
+      <p class="tip">命名小技巧：<code>btn</code> 開頭是按鈕、<code>txt</code> 是文字方塊、<code>lst</code> 是清單。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 15 -->
+<section class="slide" data-wiki="event-handling">
+  <h2>事件與事件處理常式</h2>
+  <div class="cols">
+    <div>
+<pre data-example="NamesApp/Form1.cs"><code>private void button1_Click(object sender, System.EventArgs e)
+{
+
+}</code></pre>
+      <ul>
+        <li><code>sender</code>：<b>誰</b>引發了事件（例如被按的按鈕）。</li>
+        <li><code>e</code>：事件附帶的資料（例如滑鼠位置）。</li>
+      </ul>
+    </div>
+    <div>
+      <ul>
+        <li>Windows Forms 是<b>事件驅動</b>：事件發生，就執行對應的處理常式。</li>
+        <li>在屬性視窗選按鈕的 <b>Click</b> 事件並<b>雙擊</b>，Visual Studio 會自動產生處理常式。</li>
+        <li>雙擊滑鼠其實也會引發 MouseDown、MouseUp、Click 等多個事件。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 16 -->
+<section class="slide" data-wiki="first-app">
+  <h2>寫按鈕事件：把名字加入清單</h2>
+<pre data-example="NamesApp/Form1.cs"><code>private void btnAdd_Click(object sender, EventArgs e)
+{
+    if (!string.IsNullOrWhiteSpace(txtName.Text) &amp;&amp; !lstNames.Items.Contains(txtName.Text))
+        lstNames.Items.Add(txtName.Text);
+}</code></pre>
+  <ul>
+    <li><code>!</code> 表示「不是」，<code>&amp;&amp;</code> 表示「而且」。</li>
+    <li>文字方塊<b>不是空白</b>、而且清單裡<b>還沒有這個名字</b> → 加入清單。</li>
+    <li>按 <b>F5</b> 執行，輸入名字後按按鈕試試看。</li>
+  </ul>
+</section>
+
+<!-- 17 -->
+<section class="slide" data-wiki="event-handling">
+  <h2>表單的事件順序</h2>
+  <p><b>啟動時</b></p>
+  <div class="flow"><span>HandleCreated</span><b>→</b><span>BindingContextChanged</span><b>→</b><span><b>Load</b></span><b>→</b><span>VisibleChanged</span><b>→</b><span>Activated</span><b>→</b><span><b>Shown</b></span></div>
+  <p><b>關閉時</b></p>
+  <div class="flow"><span>Closing</span><b>→</b><span><b>FormClosing</b></span><b>→</b><span>Closed</span><b>→</b><span><b>FormClosed</b></span><b>→</b><span>Deactivate</span></div>
+  <p class="tip">初學者先記住：<code>Load</code> 適合做初始化，<code>FormClosing</code> 可以在關閉前做確認。</p>
+</section>
+
+<!-- 18 -->
+<section class="slide" data-wiki="index">
+  <h2>小結與課後練習</h2>
+  <div class="cols">
+    <div class="card">
+      <p class="kicker">今天學到</p>
+      <ul>
+        <li>C# 語法三規則與 Hello World</li>
+        <li>變數、型別、型別安全</li>
+        <li>if / else if / switch</li>
+        <li>表單、控制項、事件</li>
+      </ul>
+    </div>
+    <div class="card">
+      <p class="kicker">練習</p>
+      <ol>
+        <li>完成 Names 程式並執行。</li>
+        <li>輸入空白或重複名字，觀察會不會加入。</li>
+        <li>挑戰：再加一顆按鈕，用 <code>if</code> 判斷清單有選取項目時才刪除。</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- 19 -->
+<section class="slide" data-wiki="sources">
+  <h2>資料來源（Microsoft Learn）</h2>
+  <ul style="font-size:.9em">
+    <li>S01 <a href="https://learn.microsoft.com/zh-tw/dotnet/csharp/tour-of-csharp/overview">A tour of C# 概觀</a></li>
+    <li>S02 <a href="https://learn.microsoft.com/zh-tw/dotnet/csharp/fundamentals/types/">C# 類型系統</a></li>
+    <li>S03 <a href="https://learn.microsoft.com/zh-tw/dotnet/csharp/language-reference/statements/selection-statements">if 和 switch 語句</a></li>
+    <li>S04 <a href="https://learn.microsoft.com/zh-tw/dotnet/desktop/winforms/overview/">什麼是 Windows Forms</a></li>
+    <li>S05 <a href="https://learn.microsoft.com/zh-tw/dotnet/desktop/winforms/forms/events">事件概觀</a></li>
+    <li>S06 <a href="https://learn.microsoft.com/zh-tw/dotnet/desktop/winforms/order-of-events-in-windows-forms">Windows Forms 中的事件順序</a></li>
+    <li>S07 <a href="https://learn.microsoft.com/zh-tw/dotnet/desktop/winforms/get-started/create-app-visual-studio">教學：建立 Windows Forms 應用程式</a></li>
+  </ul>
+  <p class="sub">本簡報內容全部取自本專案 LLM Wiki；每頁左下角標示對應條目。</p>
+</section>
+
+</main>
+
+<nav class="nav" aria-label="投影片切換">
+  <button id="prev" aria-label="上一頁">◀</button>
+  <span class="count" id="count">1 / 1</span>
+  <button id="next" aria-label="下一頁">▶</button>
+</nav>
+
+<script>
+(function(){
+  // 在 GitHub Pages 上連到 GitHub 儲存庫中的 Markdown 原始檔；本機開啟時連到相對路徑
+  var WIKI_BASE = "../wiki/";
+  var hm = location.hostname.match(/^([^.]+)\.github\.io$/);
+  if (hm) {
+    var repo = location.pathname.split("/").filter(Boolean)[0];
+    WIKI_BASE = "https://github.com/" + hm[1] + "/" + repo + "/blob/main/wiki/";
+  }
+  var SRC = {"index":"—","csharp-basics":"S01","variables":"S02","conditions":"S03","windows-forms":"S04",
+             "first-app":"S07","event-handling":"S05、S06、S07","sources":"S01–S07"};
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var bar = document.getElementById("bar"), count = document.getElementById("count");
+  var i = 0;
+
+  // 每頁加上「對應 Wiki 條目」標示
+  slides.forEach(function(s){
+    var w = s.getAttribute("data-wiki");
+    var m = document.createElement("div");
+    m.className = "meta";
+    m.innerHTML = 'Wiki：<a href="' + WIKI_BASE + (w === "slide-outline" ? "queries/" : "") + w + '.md">' + w + "</a>　來源：" + (SRC[w] || "—");
+    s.appendChild(m);
+  });
+
+  // 簡易 C# 語法上色
+  var KW = /\b(using|namespace|class|static|void|private|public|if|else|switch|case|default|break|return|var|new|true|false|int|double|bool|char|string|object)\b/g;
+  var TY = /\b(Console|EventArgs|System|Program|Main)\b/g;
+  document.querySelectorAll("pre code").forEach(function(c){
+    var lines = c.textContent.split("\n").map(function(line){
+      var esc = function(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");};
+      var ci = line.indexOf("//"), body = line, cm = "";
+      if (ci >= 0 && line.slice(0, ci).split('"').length % 2 === 1) { body = line.slice(0, ci); cm = line.slice(ci); }
+      var parts = body.split(/("(?:[^"\\]|\\.)*")/);
+      var out = parts.map(function(p, k){
+        if (k % 2 === 1) return '<span class="st">' + esc(p) + "</span>";
+        return esc(p).replace(KW,'<span class="kw">$1</span>').replace(TY,'<span class="ty">$1</span>')
+                     .replace(/\b(\d+(?:\.\d+)?)\b/g,'<span class="nu">$1</span>');
+      }).join("");
+      return out + (cm ? '<span class="cm">' + esc(cm) + "</span>" : "");
+    });
+    c.innerHTML = lines.join("\n");
+  });
+
+  function show(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle("active", k === i); });
+    bar.style.width = ((i + 1) / slides.length * 100) + "%";
+    count.textContent = (i + 1) + " / " + slides.length;
+    if (location.hash !== "#" + (i + 1)) history.replaceState(null, "", "#" + (i + 1));
+  }
+  document.getElementById("prev").onclick = function(){ show(i - 1); };
+  document.getElementById("next").onclick = function(){ show(i + 1); };
+  document.addEventListener("keydown", function(e){
+    if (["ArrowRight","PageDown"," ","Enter"].indexOf(e.key) >= 0){ e.preventDefault(); show(i + 1); }
+    else if (["ArrowLeft","PageUp","Backspace"].indexOf(e.key) >= 0){ e.preventDefault(); show(i - 1); }
+    else if (e.key === "Home") show(0);
+    else if (e.key === "End") show(slides.length - 1);
+  });
+  var x0 = null;
+  document.addEventListener("touchstart", function(e){ x0 = e.touches[0].clientX; }, {passive:true});
+  document.addEventListener("touchend", function(e){
+    if (x0 === null) return; var dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 50) show(i + (dx < 0 ? 1 : -1)); x0 = null;
+  });
+  var h = parseInt(location.hash.slice(1), 10);
+  show(isNaN(h) ? 0 : h - 1);
+})();
+</script>
+</body>
+</html>
